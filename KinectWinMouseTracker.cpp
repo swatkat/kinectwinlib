@@ -49,25 +49,22 @@ void KinectWinMouseTracker::NuiGotSkeletonAlert()
         NuiTransformSmooth( &nuiSkeletonFrame, &nuiSmoothParams );
 
         // Convert left hand vector4 to x,y coordinates
+        float fLeftX = 0, fLeftY = 0;
         Vector4 v4LeftHand = nuiSkeletonFrame.SkeletonData[i].SkeletonPositions[NUI_SKELETON_POSITION_HAND_LEFT];
-        float fLeftX = 0;
-        float fLeftY = 0;
         NuiTransformSkeletonToDepthImageF( v4LeftHand, &fLeftX, &fLeftY );
 
-        // Get desktop boundaries
-        RECT rectDesktop;
-        HWND hDesktopWnd = GetDesktopWindow();
-        GetClientRect( hDesktopWnd, &rectDesktop );
-
-        // Set mouse cursor boundaries
+        // Get desktop size and set mouse boundary
+        RECT rectDesktop = {0};
+        rectDesktop.right = GetSystemMetrics( SM_CXSCREEN );
+        rectDesktop.bottom = GetSystemMetrics( SM_CYSCREEN );
         ClipCursor( &rectDesktop );
 
-        // Convert floating coordinates to integer pixel coordinates
-        POINT ptMouse;
-        ptMouse.x = (int) ( fLeftX * rectDesktop.right + 0.5f ); // rectDesktop.right --> width
-        ptMouse.y = (int) ( fLeftY * rectDesktop.bottom + 0.5f ); // rectDesktop.bottom --> height
-
         // Move cursor
-        SetCursorPos( ptMouse.x, ptMouse.y );
+        INPUT mouseInput = {0};
+        mouseInput.type = INPUT_MOUSE;
+        mouseInput.mi.dx = (int)( fLeftX * 65535 );
+        mouseInput.mi.dy = (int)( fLeftY * 65535 );
+        mouseInput.mi.dwFlags = MOUSEEVENTF_MOVE | MOUSEEVENTF_ABSOLUTE;
+        SendInput( 1, &mouseInput, sizeof( INPUT ) );
     }
 }
