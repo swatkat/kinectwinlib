@@ -3,6 +3,6 @@
 
 #include "KinectWinLibCmn.h"
 #include "KinectWinMgr.h"
-#include "KinectWinMouseTracker.h"
+#include "KinectWinGesture.h"
 
 #endif // __KINECTWINLIBTESTER_H__

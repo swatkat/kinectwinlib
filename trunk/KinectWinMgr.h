@@ -13,10 +13,12 @@ public:
     void NuiUnInit();
 
 private:
+    static DWORD WINAPI NuiGuessGestureThread( LPVOID pParam );
     static DWORD WINAPI NuiProcessThread( LPVOID pParam );
     void NuiGotSkeletonAlert();
 
     HANDLE m_hNuiProcessThread;
+    HANDLE m_hNuiGuessGestureThread;
     HANDLE m_hEvNuiProcessThreadStopEvent;
     HANDLE m_hNuiSkeletonEvent;
     KinectWinGesture m_kinectWinGesture;
