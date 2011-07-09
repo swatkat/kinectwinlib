@@ -69,14 +69,14 @@
     </ProjectReference>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="KinectWinGesture.h" />
     <ClInclude Include="KinectWinLibCmn.h" />
     <ClInclude Include="KinectWinMgr.h" />
-    <ClInclude Include="KinectWinMouseTracker.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="KinectWinGesture.cpp" />
     <ClCompile Include="KinectWinLibCmn.cpp" />
     <ClCompile Include="KinectWinMgr.cpp" />
-    <ClCompile Include="KinectWinMouseTracker.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
