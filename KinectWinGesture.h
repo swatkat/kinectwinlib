@@ -23,10 +23,11 @@ class KinectWinGesture
 public:
     KinectWinGesture();
     ~KinectWinGesture();
-    static DWORD WINAPI NuiGestureProcessThread( LPVOID pParam );
     eHandGestureType GuessHandGuesture();
     void SaveHandNuiPosition( float x, float y );
+
 private:
+    CRITICAL_SECTION m_csNuiHandLocationHistory;
     std::vector<NuiTrackedSkeletalObjectLocation> m_NuiHandLocationHistory;
 };
 

@@ -5,6 +5,7 @@
 KinectWinMgr::KinectWinMgr():
 m_hNuiSkeletonEvent( NULL ),
 m_hNuiProcessThread( NULL ),
+m_hNuiGuessGestureThread( NULL ),
 m_hEvNuiProcessThreadStopEvent( NULL )
 {
     KINECTWIN_FN_ENTRY;
@@ -51,6 +52,7 @@ bool KinectWinMgr::NuiInit()
     // Start the NUI processing thread
     m_hEvNuiProcessThreadStopEvent = CreateEvent( NULL, FALSE, FALSE, NULL );
     m_hNuiProcessThread = CreateThread( NULL, 0, NuiProcessThread, this, 0, NULL );
+    m_hNuiGuessGestureThread = CreateThread( NULL, 0, NuiGuessGestureThread, this, 0, NULL );
 
     KINECTWIN_FN_EXIT;
     return true;
@@ -60,6 +62,13 @@ bool KinectWinMgr::NuiInit()
 void KinectWinMgr::NuiUnInit()
 {
     KINECTWIN_FN_ENTRY;
+    
+    // Disable skeleton tracking
+    NuiSkeletonTrackingDisable();
+
+    // Shutdown NUI
+    NuiShutdown();
+
     // Stop the NUI processing thread
     if( m_hEvNuiProcessThreadStopEvent )
     {
@@ -70,14 +79,13 @@ void KinectWinMgr::NuiUnInit()
             WaitForSingleObject( m_hNuiProcessThread, INFINITE );
             CloseHandle( m_hNuiProcessThread );  
         }
+        if( m_hNuiGuessGestureThread )
+        {
+            WaitForSingleObject( m_hNuiGuessGestureThread, INFINITE );
+            CloseHandle( m_hNuiGuessGestureThread );
+        }
         CloseHandle( m_hEvNuiProcessThreadStopEvent );
     }
-
-    // Disable skeleton tracking
-    NuiSkeletonTrackingDisable();
-
-    // Shutdown NUI
-    NuiShutdown();
 
     // Close skeleton tracking alert event handle
     if( m_hNuiSkeletonEvent )
@@ -85,6 +93,7 @@ void KinectWinMgr::NuiUnInit()
         CloseHandle( m_hNuiSkeletonEvent );
     }
     m_hNuiProcessThread = NULL;
+    m_hNuiGuessGestureThread = NULL;
     m_hEvNuiProcessThreadStopEvent = NULL;
     m_hNuiSkeletonEvent = NULL;
     KINECTWIN_FN_EXIT;
@@ -110,12 +119,52 @@ DWORD WINAPI KinectWinMgr::NuiProcessThread( LPVOID pParam )
         if( 0 == ( WAIT_OBJECT_0 + nEventIdx ) )
         {
             // Exit from loop
+            SetEvent( pThis->m_hEvNuiProcessThreadStopEvent );
             break;
         }
         else if( 1 == ( WAIT_OBJECT_0 + nEventIdx ) )
         {
             // Process skeleton motion alert
             pThis->NuiGotSkeletonAlert();
+        }
+        else if( WAIT_FAILED == nEventIdx )
+        {
+#ifdef KINECTWIN_DBG_LOG
+            OutputDebugString( "WaitForMultipleObjects error!" );
+#endif // KINECTWIN_DBG_LOG
+            break;
+        }
+    }
+    KINECTWIN_FN_EXIT;
+    return 0;
+}
+
+// Thread that guesses gesture at regular intervals.
+DWORD WINAPI KinectWinMgr::NuiGuessGestureThread( LPVOID pParam )
+{
+    KINECTWIN_FN_ENTRY;
+    int nWaitRetCode = 0;
+    KinectWinMgr* pThis = (KinectWinMgr*)pParam;
+    while( 1 )
+    {
+        nWaitRetCode = WaitForSingleObject( pThis->m_hEvNuiProcessThreadStopEvent, KINECTWINLIB_NUI_GESTURE_WAIT_TIMEOUT_IN_MS );
+        if( WAIT_OBJECT_0 == nWaitRetCode )
+        {
+            // Exit from loop
+            SetEvent( pThis->m_hEvNuiProcessThreadStopEvent );
+            break;
+        }
+        else if( WAIT_TIMEOUT == nWaitRetCode )
+        {
+            // Check for any guesture every second?
+            pThis->m_kinectWinGesture.GuessHandGuesture();
+        }
+        else
+        {
+#ifdef KINECTWIN_DBG_LOG
+            OutputDebugString( "WaitForSingleObject error!" );
+#endif // KINECTWIN_DBG_LOG
+            break;
         }
     }
     KINECTWIN_FN_EXIT;
@@ -178,6 +227,5 @@ void KinectWinMgr::NuiGotSkeletonAlert()
 
         // Save coordinates
         m_kinectWinGesture.SaveHandNuiPosition( fLeftX, fLeftY );
-        //m_kinectWinGesture.GuessHandGuesture();
     }
 }
