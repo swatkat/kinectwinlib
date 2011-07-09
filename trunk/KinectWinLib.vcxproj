@@ -69,11 +69,13 @@
     </ProjectReference>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="KinectWinDesktopInput.h" />
     <ClInclude Include="KinectWinGesture.h" />
     <ClInclude Include="KinectWinLibCmn.h" />
     <ClInclude Include="KinectWinMgr.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="KinectWinDesktopInput.cpp" />
     <ClCompile Include="KinectWinGesture.cpp" />
     <ClCompile Include="KinectWinLibCmn.cpp" />
     <ClCompile Include="KinectWinMgr.cpp" />

@@ -24,6 +24,9 @@
     <ClInclude Include="KinectWinGesture.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="KinectWinDesktopInput.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="KinectWinMgr.cpp">
@@ -33,6 +36,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="KinectWinGesture.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="KinectWinDesktopInput.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
