@@ -63,8 +63,12 @@ eHandGestureType KinectWinGesture::GuessHandGuesture()
         }
         LeaveCriticalSection( &m_csNuiHandLocationHistory );
     }
+
 #ifdef KINECTWIN_DBG_LOG
-    OutputDebugString( KINECTWINGESTURE_TYPE_STRING[eHandGesture] );
+    if( eHandGestureNone != eHandGesture )
+    {
+        OutputDebugString( KINECTWINGESTURE_TYPE_STRING[eHandGesture] );
+    }
 #endif // KINECTWIN_DBG_LOG
 
     return eHandGesture;

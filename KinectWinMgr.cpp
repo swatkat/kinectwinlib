@@ -1,4 +1,5 @@
 #include "KinectWinMgr.h"
+#include "KinectWinDesktopInput.h"
 #include <MSR_NuiApi.h>
 
 // Constructor
@@ -144,6 +145,7 @@ DWORD WINAPI KinectWinMgr::NuiGuessGestureThread( LPVOID pParam )
 {
     KINECTWIN_FN_ENTRY;
     int nWaitRetCode = 0;
+    eHandGestureType detectedHandGuesture = eHandGestureNone;
     KinectWinMgr* pThis = (KinectWinMgr*)pParam;
     while( 1 )
     {
@@ -157,7 +159,8 @@ DWORD WINAPI KinectWinMgr::NuiGuessGestureThread( LPVOID pParam )
         else if( WAIT_TIMEOUT == nWaitRetCode )
         {
             // Check for any guesture every second?
-            pThis->m_kinectWinGesture.GuessHandGuesture();
+            detectedHandGuesture = pThis->m_kinectWinGesture.GuessHandGuesture();
+            SendKeyboardInputs( detectedHandGuesture );
         }
         else
         {
@@ -211,19 +214,8 @@ void KinectWinMgr::NuiGotSkeletonAlert()
         Vector4 v4LeftHand = nuiSkeletonFrame.SkeletonData[i].SkeletonPositions[NUI_SKELETON_POSITION_HAND_LEFT];
         NuiTransformSkeletonToDepthImageF( v4LeftHand, &fLeftX, &fLeftY );
 
-        // Get desktop size and set mouse boundary
-        RECT rectDesktop = {0};
-        rectDesktop.right = GetSystemMetrics( SM_CXSCREEN );
-        rectDesktop.bottom = GetSystemMetrics( SM_CYSCREEN );
-        ClipCursor( &rectDesktop );
-
         // Move cursor
-        INPUT mouseInput = {0};
-        mouseInput.type = INPUT_MOUSE;
-        mouseInput.mi.dx = (int)( fLeftX * 65535 );
-        mouseInput.mi.dy = (int)( fLeftY * 65535 );
-        mouseInput.mi.dwFlags = MOUSEEVENTF_MOVE | MOUSEEVENTF_ABSOLUTE;
-        SendInput( 1, &mouseInput, sizeof( INPUT ) );
+        SendMouseInputs( fLeftX, fLeftY );
 
         // Save coordinates
         m_kinectWinGesture.SaveHandNuiPosition( fLeftX, fLeftY );
